@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VR Project — Suspended Assembly</title>
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; }
+
+  #overlay {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    z-index: 10;
+    color: #f4f1ff;
+    pointer-events: none;
+  }
+  #overlay .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+  #overlay h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    margin: 4px 0 0;
+    font-weight: 600;
+    text-shadow: 0 0 20px rgba(139,107,255,0.6);
+  }
+
+  #back {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 10;
+    color: #f4f1ff;
+    text-decoration: none;
+    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+  }
+</style>
+</head>
+<body>
+
+<div id="overlay">
+  <div class="eyebrow">Suspended Assembly</div>
+  <h1>VR 项目 · 占位场景</h1>
+</div>
+<a id="back" href="../">← 返回入口页</a>
+
+<!--
+  这是一个可运行的 WebXR 起始场景（A-Frame）。
+  桌面浏览器里用鼠标拖动看四周；有VR头显（比如Quest）打开这个网址，
+  点右下角的"进入VR"图标就能进沉浸模式。
+
+  把下面 <a-scene> 里的内容换成你真正的VR场景即可，
+  这个文件夹和 /web/ 完全独立，随便改不会影响另一个项目。
+-->
+
+<a-scene background="color: #0a0a1a" fog="type: exponential; color: #150a2e; density: 0.08">
+
+  <a-assets></a-assets>
+
+  <!-- 环境光 -->
+  <a-light type="ambient" color="#8b6bff" intensity="0.5"></a-light>
+  <a-light type="directional" color="#ff8fd6" intensity="0.6" position="3 4 2"></a-light>
+
+  <!-- 地面：暗紫渐变感的网格 -->
+  <a-plane rotation="-90 0 0" width="30" height="30" color="#150a2e"
+           material="metalness: 0.2; roughness: 0.8"></a-plane>
+
+  <!-- 占位物体：呼应网页版的分段小机器人配色 -->
+  <a-entity id="assembly" position="0 1.4 -3">
+    <a-box color="#ffe08b" width="0.5" height="0.45" depth="0.45" position="0 1.1 0"></a-box>
+    <a-sphere color="#6be0ff" radius="0.4" position="0 0.5 0"></a-sphere>
+    <a-cylinder color="#7bffb0" radius="0.38" height="0.28" position="0 0.1 0"></a-cylinder>
+    <a-sphere color="#ff8fd6" radius="0.12" position="-0.45 0.65 0"></a-sphere>
+    <a-sphere color="#ff8fd6" radius="0.12" position="0.45 0.65 0"></a-sphere>
+
+    <a-animation attribute="rotation" dur="12000" easing="linear"
+                 to="0 360 0" repeat="indefinite"></a-animation>
+  </a-entity>
+
+  <!-- 提示文字，悬浮在场景里 -->
+  <a-text value="替换成你的VR内容" align="center" color="#f4f1ff"
+          position="0 2.6 -3" width="4" opacity="0.7"></a-text>
+
+  <a-sky color="#0a0a1a"></a-sky>
+
+  <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+
+</a-scene>
+
+</body>
+</html>
