@@ -206,11 +206,69 @@
     width: 90px; height: 90px;
     background: #fff;
     padding: 4px;
-    border-radius: 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
+  .qr-code:hover { transform: translateY(-2px); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.16); }
   .qr-code img { width: 100%; height: 100%; object-fit: contain; }
 
   .qr-text h4 { font-size: 13px; color: var(--text-hi); margin-bottom: 4px; }
+  .qr-popup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 7, 22, 0.88);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 20px;
+  }
+  .qr-popup {
+    width: min(420px, 100%);
+    background: rgba(12, 8, 30, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 24px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 32px 120px rgba(0, 0, 0, 0.35);
+  }
+  .qr-popup img {
+    width: 280px;
+    max-width: 100%;
+    border-radius: 20px;
+    margin-bottom: 18px;
+  }
+  .qr-popup p {
+    color: var(--text-lo);
+    font-size: 13px;
+    line-height: 1.7;
+    margin-bottom: 18px;
+  }
+  .qr-popup a {
+    display: inline-block;
+    padding: 12px 22px;
+    border-radius: 18px;
+    color: #fff;
+    background: rgba(139, 107, 255, 0.95);
+    text-decoration: none;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+  }
+  .close-qr {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    color: #f4f1ff;
+    font-size: 18px;
+    line-height: 30px;
+    cursor: pointer;
+  }
   .qr-text p { font-size: 11px; color: var(--text-lo); line-height: 1.4; }
 
   #back {
@@ -282,12 +340,20 @@
       <!-- 下部分：跨平台免安装 WebAR 二维码 -->
       <div class="qr-section">
         <div class="qr-code">
-          <!-- 动态二维码接口，完美适配iPhone与安卓。后期上线后可把data=后面替换成你的实际AR页面链接 -->
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://github.com/vvina-ten/Ying-s-portfolio" alt="AR QR">
+          <img id="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=/ar/index.html" alt="AR QR">
         </div>
         <div class="qr-text">
           <h4>移动端 AR 实景</h4>
-          <p>无需下载 App，iOS/Android 扫码即可将该模型投射在你的真实桌面或空间中。</p>
+          <p>仅限手机访问。点击二维码放大，扫码或点击进入 AR 页面，在手机上直接查看模型。</p>
+          <p style="margin-top:8px; color:var(--accent);">请在手机上打开此链接，电脑端不支持 AR 体验。</p>
+        </div>
+      </div>
+
+      <div class="qr-popup-overlay" id="qr-popup-overlay" style="display:none;">
+        <div class="qr-popup">
+          <button class="close-qr" id="close-qr">×</button>
+          <img id="qr-popup-img" src="" alt="放大二维码">
+          <p>扫描此二维码可直接在手机上打开 AR 体验页面。</p>
         </div>
       </div>
     </div>
@@ -302,6 +368,37 @@
   const wrap = document.getElementById('canvas-wrap');
   const hintText = document.getElementById('hint-text');
   const stageTitle = document.getElementById('stage-title');
+  const qrSection = document.querySelector('.qr-section');
+  const qrPopup = document.getElementById('qr-popup-overlay');
+  const qrPopupImg = document.getElementById('qr-popup-img');
+  const qrImage = document.getElementById('qr-image');
+
+  const arPageUrl = (function () {
+    const href = window.location.href;
+    if (href.endsWith('/web/index.html')) return href.replace(/\/web\/index\.html$/, '/ar/index.html');
+    if (href.endsWith('/web/')) return href.replace(/\/web\/$/, '/ar/index.html');
+    if (window.location.origin) return `${window.location.origin}/ar/index.html`;
+    return 'ar/index.html';
+  })();
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(arPageUrl)}`;
+  qrImage.src = qrCodeUrl;
+  qrPopupImg.src = qrCodeUrl;
+
+  function toggleQrPopup(show) {
+    qrPopup.style.display = show ? 'flex' : 'none';
+  }
+
+  qrSection.addEventListener('click', () => {
+    toggleQrPopup(true);
+  });
+  const closeQr = document.getElementById('close-qr');
+  closeQr.addEventListener('click', (event) => {
+    event.stopPropagation();
+    toggleQrPopup(false);
+  });
+  qrPopup.addEventListener('click', (event) => {
+    if (event.target === qrPopup) toggleQrPopup(false);
+  });
 
   const loadingEl = document.createElement('div');
   loadingEl.textContent = '加载模型中…';
@@ -314,7 +411,7 @@
   
   // 【新相机机位】
   // 状态 0 特写视角：X为0正对，Y上提到0.5聚焦头部躯干，Z缩短到2.0保证清晰度
-  camera.position.set(0, 0.5, 2.0); 
+  camera.position.set(0, 0.32, 2.8);
 
   // 核心距离参数配置
   const DISTANCE_CLOSE_UP = 2.0; // 特写距离
@@ -323,7 +420,7 @@
 
   let currentStatus = 0; // 0:特写, 1:正常完整, 2:子弹时间拆分, 3:部件聚焦
   const cameraTarget = new THREE.Vector3(0, 0, 0);
-  const sceneTarget = new THREE.Vector3(0, 0.12, 0);
+  const sceneTarget = new THREE.Vector3(0, 0.1, 0);
   let selectedPart = null;
   let focusDistance = 1.8;
 
@@ -389,8 +486,8 @@
     (gltf) => {
       const root = gltf.scene;
       
-      // 【关键修正】调整模型初始朝向，使默认显示为正面视角
-      root.rotation.y = Math.PI / 2;
+      // 【关键修正】调整模型初始朝向为正面视角
+      root.rotation.y = 0;
 
       const rawBox = new THREE.Box3().setFromObject(root);
       const size = rawBox.getSize(new THREE.Vector3());
@@ -401,11 +498,11 @@
       root.position.sub(rawCenter); 
       group.add(root);
       group.scale.setScalar(scale);
-      group.position.y = 0.0;
+      group.position.y = 0.04;
 
       root.traverse((child) => {
         if (child.isMesh) {
-          child.material.side = THREE.FrontSide;
+          child.material.side = THREE.DoubleSide;
           parts.push({ mesh: child, home: child.position.clone() });
         }
       });
