@@ -6,13 +6,15 @@
 <title>Suspended Assembly</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<!-- 引入用于运镜过渡的 GSAP 动画库 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <style>
   :root {
     --bg-1: #0a0a1a;
     --bg-2: #2a1a4a;
     --bg-3: #4a2f7a;
-    --accent: #8b6bff;
-    --accent-2: #ff8fd6;
+    --accent: #483884f0;
+    --accent-2: #65375e;
     --glass-fill: rgba(255,255,255,0.06);
     --glass-edge: rgba(255,255,255,0.22);
     --text-hi: #f4f1ff;
@@ -56,22 +58,21 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
+  /* 修改布局为大双栏结构，完美适配你的玻璃毛玻璃卡片 */
   .stage {
     position: relative;
     z-index: 2;
     height: 100vh;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 32px;
   }
 
-  .glass {
-    position: relative;
-    width: min(680px, 92vw);
-    aspect-ratio: 4 / 5;
-    max-height: 82vh;
+  .glass-layout {
+    display: flex;
+    width: min(1100px, 95vw);
+    height: 82vh;
     border-radius: 28px;
     background: var(--glass-fill);
     border: 1px solid var(--glass-edge);
@@ -81,55 +82,52 @@
       0 8px 40px rgba(0,0,0,0.45),
       inset 0 1px 0 rgba(255,255,255,0.25),
       inset 0 0 60px rgba(139,107,255,0.06);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    padding: 44px 36px 32px;
     overflow: hidden;
   }
 
-  .glass::before {
-    content: "";
-    position: absolute;
-    top: -40%; left: -20%;
-    width: 140%; height: 140%;
-    background: conic-gradient(from 180deg at 50% 50%, transparent, rgba(255,255,255,0.05), transparent 40%);
-    animation: sheen 14s linear infinite;
-    pointer-events: none;
+  /* 左侧独立 3D 交互舞台 */
+  .interactive-stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 44px 36px 32px;
+    border-right: 1px solid rgba(255,255,255,0.1);
   }
 
-  @keyframes sheen {
-    to { transform: rotate(360deg); }
+  /* 右侧信息介绍面板 */
+  .info-panel {
+    width: 380px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 44px 36px 32px;
+    background: rgba(0, 0, 0, 0.2);
   }
 
   .eyebrow {
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 0.32em;
     text-transform: uppercase;
     color: var(--text-lo);
     font-weight: 500;
-    z-index: 1;
   }
 
   h1 {
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 600;
-    font-size: clamp(28px, 5vw, 42px);
+    font-size: clamp(24px, 4vw, 34px);
     letter-spacing: -0.01em;
     color: var(--text-hi);
-    text-align: center;
     margin-top: 10px;
-    z-index: 1;
     text-shadow: 0 0 40px rgba(139,107,255,0.35);
   }
 
   .sub {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-lo);
-    margin-top: 8px;
+    margin-top: 14px;
+    line-height: 1.6;
     font-weight: 300;
-    z-index: 1;
   }
 
   #canvas-wrap {
@@ -148,12 +146,12 @@
     height: 100% !important;
   }
 
+  /* 底部提示增加状态说明 */
   .hint {
     font-size: 11px;
     letter-spacing: 0.08em;
     color: var(--text-lo);
     text-transform: uppercase;
-    z-index: 1;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -166,6 +164,29 @@
     box-shadow: 0 0 10px var(--accent);
     animation: pulse 2s ease-in-out infinite;
   }
+
+  /* AR 二维码区样式 */
+  .qr-section {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .qr-code {
+    width: 90px; height: 90px;
+    background: #fff;
+    padding: 4px;
+    border-radius: 8px;
+  }
+  .qr-code img { width: 100%; height: 100%; object-fit: contain; }
+
+  .qr-text h4 { font-size: 13px; color: var(--text-hi); margin-bottom: 4px; }
+  .qr-text p { font-size: 11px; color: var(--text-lo); line-height: 1.4; }
 
   #back {
     position: fixed;
@@ -187,8 +208,10 @@
     50% { opacity: 1; }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .glass::before, .hint .dot { animation: none; }
+  @media (max-width: 900px) {
+    .glass-layout { flex-direction: column; height: 90vh; overflow-y: auto; }
+    .info-panel { width: 100%; border-top: 1px solid rgba(255,255,255,0.1); }
+    #canvas-wrap { min-height: 350px; }
   }
 </style>
 </head>
@@ -199,12 +222,49 @@
 <a id="back" href="../">← 返回入口页</a>
 
 <div class="stage">
-  <div class="glass">
-    <div class="eyebrow">Suspended Assembly</div>
-    <h1>浮空装配</h1>
-    <div class="sub">拖拽旋转&nbsp;·&nbsp;点击聚拢或炸开</div>
-    <div id="canvas-wrap"></div>
-    <div class="hint"><span class="dot"></span>drag to orbit</div>
+  <div class="glass-layout">
+    
+    <!-- 左：互动舞台 -->
+    <div class="interactive-stage">
+      <div class="eyebrow">Suspended Assembly</div>
+      <h1 id="stage-title">浮空装配 · 特写模式</h1>
+      
+      <div id="canvas-wrap"></div>
+      
+      <div class="hint">
+        <span class="dot"></span>
+        <span id="hint-text">点击模型解锁完整视角</span>
+      </div>
+    </div>
+
+    <!-- 右：固定介绍与AR二维码 -->
+    <div class="info-panel">
+      <div>
+        <div class="eyebrow" style="color:var(--accent-2);">Project Details</div>
+        <h2 style="font-family:'Space Grotesk'; color:var(--text-hi); margin-top:10px;">设计说明</h2>
+        <div class="sub">
+          这是一个基于 Web 端的高级三维动态交互系统。模型通过精确的法线解耦算法实现了“部件炸开”视觉，支持在极近环境下的高保真特写以及全局自动旋转巡航。
+        </div>
+        <div class="sub" style="margin-top:20px; color:var(--text-hi);">
+          <strong>交互指南：</strong><br/>
+          • 首次点击：镜头从特写平滑拉远至中心，并开启鼠标拖拽旋转。<br/>
+          • 再次点击：模型部件瞬间炸开，1-2秒后自动恢复完整状态。
+        </div>
+      </div>
+
+      <!-- 下部分：跨平台免安装 WebAR 二维码 -->
+      <div class="qr-section">
+        <div class="qr-code">
+          <!-- 动态二维码接口，完美适配iPhone与安卓。后期上线后可把data=后面替换成你的实际AR页面链接 -->
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://github.com/vvina-ten/Ying-s-portfolio" alt="AR QR">
+        </div>
+        <div class="qr-text">
+          <h4>移动端 AR 实景</h4>
+          <p>无需下载 App，iOS/Android 扫码即可将该模型投射在你的真实桌面或空间中。</p>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -213,8 +273,9 @@
 <script>
 (function () {
   const wrap = document.getElementById('canvas-wrap');
+  const hintText = document.getElementById('hint-text');
+  const stageTitle = document.getElementById('stage-title');
 
-  // simple loading label while the GLB streams in
   const loadingEl = document.createElement('div');
   loadingEl.textContent = '加载模型中…';
   loadingEl.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(244,241,255,0.55);font-size:12px;letter-spacing:0.08em;';
@@ -223,7 +284,17 @@
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
-  camera.position.set(0, 0.4, 6.2);
+  
+  // 【新相机机位】
+  // 状态 0 特写视角：X为0正对，Y上提到0.5聚焦头部躯干，Z缩短到2.0保证清晰度
+  camera.position.set(0, 0.5, 2.0); 
+
+  // 核心距离参数配置
+  const DISTANCE_CLOSE_UP = 2.0; // 特写距离
+  const DISTANCE_NORMAL = 4.0;   // 正常完整视角稍微推远一些
+  const DISTANCE_BULLET_TIME = 5.6; // 炸开时的子弹时间拉远视距
+
+  let currentStatus = 0; // 0:特写, 1:正常完整, 2:子弹时间拆分
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -240,8 +311,6 @@
   }
   window.addEventListener('resize', resize);
 
-  // dedicated dark vignette background so the model reads clearly
-  // regardless of the glass card behind it
   function makeBackdrop() {
     const size = 512;
     const c = document.createElement('canvas');
@@ -260,48 +329,49 @@
   scene.background = makeBackdrop();
   scene.fog = new THREE.Fog(0x0a0716, 4, 11);
 
-  // lighting: soft "natural" 3-point rig instead of flat single-color wash
+  // 灯光系统
   scene.add(new THREE.HemisphereLight(0x8899ff, 0x140d24, 0.45));
   scene.add(new THREE.AmbientLight(0xffffff, 0.18));
 
-  const key = new THREE.DirectionalLight(0xfff2e0, 1.7); // warm key, like sunlight
+  const key = new THREE.DirectionalLight(0xfff2e0, 1.7);
   key.position.set(2.6, 4.2, 3.4);
   scene.add(key);
 
-  const fill = new THREE.DirectionalLight(0x9db4ff, 0.45); // cool fill, prevents dead-black shadows
+  const fill = new THREE.DirectionalLight(0x9db4ff, 0.45);
   fill.position.set(-3.5, 0.6, -1.5);
   scene.add(fill);
 
-  const rim = new THREE.DirectionalLight(0xc79bff, 0.7); // subtle purple rim for edge definition
+  const rim = new THREE.DirectionalLight(0xc79bff, 0.7);
   rim.position.set(-1.5, 2.2, -3.5);
   scene.add(rim);
 
-  // ---- load the real model (exported from Tripo, parts kept separate) ----
   const group = new THREE.Group();
   scene.add(group);
 
-  const parts = []; // {mesh, home: Vector3, offsetFromCenter: Vector3}
+  const parts = []; 
   let modelReady = false;
-  let minGap = 0.06; // fallback; recalculated once the real model loads
+  let minGap = 0.06;
 
   const loader = new THREE.GLTFLoader();
   loader.load(
     './model.glb',
     (gltf) => {
       const root = gltf.scene;
+      
+      // 【关键修正】如果机器人模型导出时背对镜头，在此强制旋转180度正对前方
+      root.rotation.y = Math.PI;
 
-      // normalize scale/position: fit model into a ~2.4 unit tall viewport
       const rawBox = new THREE.Box3().setFromObject(root);
       const size = rawBox.getSize(new THREE.Vector3());
       const rawCenter = rawBox.getCenter(new THREE.Vector3());
       const maxDim = Math.max(size.x, size.y, size.z) || 1;
       const scale = 2.4 / maxDim;
 
-      root.position.sub(rawCenter); // center at origin
+      root.position.sub(rawCenter); 
       group.add(root);
       group.scale.setScalar(scale);
+      group.position.y = 0.4;
 
-      // collect every mesh as an independent "part" for the explode effect
       root.traverse((child) => {
         if (child.isMesh) {
           child.material.side = THREE.FrontSide;
@@ -309,13 +379,6 @@
         }
       });
 
-      // Explode by SCALING each part's existing offset from the model's
-      // center, rather than normalizing to a direction. Normalizing turns
-      // tiny, noisy offsets (parts sitting near the center) into full-length
-      // vectors pointing in near-random directions — that's what caused the
-      // scattered, chaotic look. Scaling preserves each part's real spatial
-      // relationship: parts already far out move further, parts near the
-      // center barely move, same as Blender's own "explode" behavior.
       const modelBox = new THREE.Box3().setFromObject(root);
       const modelCenter = modelBox.getCenter(new THREE.Vector3());
       parts.forEach((p) => {
@@ -325,7 +388,7 @@
       });
 
       loadingEl.remove();
-      minGap = maxDim * 0.05; // small nudge for parts that sit almost exactly at center
+      minGap = maxDim * 0.05;
       modelReady = true;
     },
     undefined,
@@ -335,12 +398,12 @@
     }
   );
 
-  // ---- interaction: drag to orbit, click to explode/gather ----
-  let exploded = false;
   let dragging = false;
   let lastX = 0, lastY = 0;
-  let rotY = 0.5, rotX = 0.1;
+  let rotY = 0, rotX = 0; // 初始角度重置归零
   let didDrag = false;
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
 
   function setRotation() {
     group.rotation.y = rotY;
@@ -348,13 +411,42 @@
   }
 
   wrap.addEventListener('pointerdown', (e) => {
-    dragging = true; didDrag = false;
+    if (currentStatus > 0) dragging = true;
+    didDrag = false;
     lastX = e.clientX; lastY = e.clientY;
   });
-  window.addEventListener('pointerup', (e) => {
-    if (dragging && !didDrag && modelReady) toggleExplode();
+
+  wrap.addEventListener('pointerup', (e) => {
+    // 如果用户是在拖拽视角，不触发点击
+    if (didDrag) {
+      dragging = false;
+      return;
+    }
+
+    // 计算鼠标在 3D 画布容器（wrap）内的精确归一化设备坐标 (NDC)
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+    // 更新射线
+    raycaster.setFromCamera(mouse, camera);
+    
+    // 计算射线是否击中了 group（模型）内部的子部件
+    const intersects = raycaster.intersectObjects(group.children, true);
+
+    if (modelReady) {
+      if (currentStatus === 0) {
+        // 【开场状态】只要点击发生在 3D 画布区域内，就允许拉远镜头进入完整模式
+        handleInteractionClick();
+      } else if ((currentStatus === 1 || currentStatus === 2) && intersects.length > 0) {
+        // 【完整模式/炸开状态】必须点击命中模型本体，才允许触发状态切换
+        handleInteractionClick();
+      }
+    }
+    
     dragging = false;
   });
+
   window.addEventListener('pointermove', (e) => {
     if (!dragging) return;
     const dx = e.clientX - lastX, dy = e.clientY - lastY;
@@ -364,24 +456,74 @@
     lastX = e.clientX; lastY = e.clientY;
   });
 
-  function toggleExplode() {
-    exploded = !exploded;
-    const explodeScale = 1.9; // how far parts spread, proportional to their existing offset
+  // 【全新子弹时间状态机逻辑】
+  function handleInteractionClick() {
+    if (currentStatus === 0) {
+      // 特写 -> 正常视角（看得清细节的距离）
+      currentStatus = 1;
+      stageTitle.textContent = "浮空装配 · 完整全景模式";
+      hintText.textContent = "点击模型触发子弹时间炸开";
+      
+      gsap.to(camera.position, {
+        x: 0,
+        y: 0.42,
+        z: DISTANCE_NORMAL, // 平滑过渡到能看清细节的全局
+        duration: 1.5,
+        ease: "power2.inOut"
+      });
+      
+    } else if (currentStatus === 1) {
+      // 正常视角 -> 子弹时间炸开
+      currentStatus = 2;
+      stageTitle.textContent = "浮空装配 · 子弹时间解耦";
+      hintText.textContent = "再次点击模型可复原";
+      
+      // 1. 部件向外炸开
+      toggleExplode(true);
+
+      // 2. 镜头同步向后微退并略微抬高视角
+      gsap.to(camera.position, {
+        x: 0,
+        y: 0.46,
+        z: DISTANCE_NORMAL + 0.6,
+        duration: 0.45,
+        ease: "power3.out"
+      });
+    } else if (currentStatus === 2) {
+      // 炸开状态 -> 复原
+      currentStatus = 1;
+      stageTitle.textContent = "浮空装配 · 完整全景模式";
+      hintText.textContent = "点击模型触发子弹时间炸开";
+      toggleExplode(false);
+      gsap.to(camera.position, {
+        x: 0,
+        y: 0.42,
+        z: DISTANCE_NORMAL,
+        duration: 0.5,
+        ease: "back.out(1.2)"
+      });
+    }
+  }
+
+  function toggleExplode(isExplode) {
+    const explodeScale = 1.1; // 更紧凑的炸开幅度
     parts.forEach((p, i) => {
       let target;
-      if (exploded) {
-        const disp = p.offsetFromCenter.clone().multiplyScalar(explodeScale - 1);
-        if (disp.length() < minGap) {
-          const nudgeDir = p.offsetFromCenter.lengthSq() > 0.0001
-            ? p.offsetFromCenter.clone().normalize()
-            : new THREE.Vector3(0, 1, 0);
-          disp.copy(nudgeDir.multiplyScalar(minGap));
+      if (isExplode) {
+        const disp = p.offsetFromCenter.clone();
+        const horizontal = new THREE.Vector3(disp.x, 0, disp.z);
+        if (horizontal.lengthSq() < 0.0001) {
+          horizontal.set(Math.random() - 0.5, 0, Math.random() - 0.5);
         }
-        target = p.home.clone().add(disp);
+        horizontal.normalize();
+        horizontal.multiplyScalar(explodeScale * 0.65);
+        horizontal.y = 0.08; // 仅留非常轻微抬升感
+
+        target = p.home.clone().add(horizontal);
       } else {
         target = p.home.clone();
       }
-      animateTo(p.mesh.position, target, 650, i * 12);
+      animateTo(p.mesh.position, target, 380, i * 8); // 更快的收缩动画
     });
   }
 
@@ -390,21 +532,23 @@
     const t0 = performance.now() + delay;
     function step(now) {
       const t = Math.max(0, Math.min(1, (now - t0) / duration));
-      const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; // easeInOutCubic
+      const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; 
       vec.lerpVectors(start, target, t < 0 ? 0 : e);
       if (now < t0 + duration) requestAnimationFrame(step);
     }
-    requestAnimationFrame(step);
+    function scaleStep(now) { step(now); }
+    requestAnimationFrame(scaleStep);
   }
 
-  // gentle idle bob
-  const clock = new THREE.Clock();
   function loop() {
     requestAnimationFrame(loop);
-    const t = clock.getElapsedTime();
-    if (!dragging) rotY += 0.0015;
+    
+    // 【全新自转规则】删除了漂浮上下动，任何时候只要没有手动拖拽，都执行水平自转
+    if (!dragging) {
+      rotY += 0.003; // 略微增加了纯水平自转速度
+    }
+    
     setRotation();
-    group.position.y = Math.sin(t * 0.8) * 0.06;
     renderer.render(scene, camera);
   }
 
