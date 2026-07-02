@@ -140,6 +140,31 @@
 
   #canvas-wrap:active { cursor: grabbing; }
 
+  #reset-view {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    z-index: 5;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 20px;
+    color: #f4f1ff;
+    background: rgba(72, 56, 132, 0.22);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 16px 40px rgba(72, 56, 132, 0.24);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.25s ease, transform 0.25s ease;
+  }
+
+  #reset-view:hover {
+    background: rgba(72, 56, 132, 0.34);
+    transform: translateY(-1px);
+  }
+
   #canvas-wrap canvas {
     display: block;
     width: 100% !important;
@@ -229,7 +254,9 @@
       <div class="eyebrow">Suspended Assembly</div>
       <h1 id="stage-title">浮空装配 · 特写模式</h1>
       
-      <div id="canvas-wrap"></div>
+      <div id="canvas-wrap">
+        <button id="reset-view">还原视角</button>
+      </div>
       
       <div class="hint">
         <span class="dot"></span>
@@ -294,7 +321,11 @@
   const DISTANCE_NORMAL = 4.0;   // 正常完整视角稍微推远一些
   const DISTANCE_BULLET_TIME = 5.6; // 炸开时的子弹时间拉远视距
 
-  let currentStatus = 0; // 0:特写, 1:正常完整, 2:子弹时间拆分
+  let currentStatus = 0; // 0:特写, 1:正常完整, 2:子弹时间拆分, 3:部件聚焦
+  const cameraTarget = new THREE.Vector3(0, 0, 0);
+  const sceneTarget = new THREE.Vector3(0, 0.12, 0);
+  let selectedPart = null;
+  let focusDistance = 1.8;
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -358,8 +389,8 @@
     (gltf) => {
       const root = gltf.scene;
       
-      // 【关键修正】如果机器人模型导出时背对镜头，在此强制旋转180度正对前方
-      root.rotation.y = Math.PI;
+      // 【关键修正】调整模型初始朝向，使默认显示为正面视角
+      root.rotation.y = Math.PI / 2;
 
       const rawBox = new THREE.Box3().setFromObject(root);
       const size = rawBox.getSize(new THREE.Vector3());
@@ -370,7 +401,7 @@
       root.position.sub(rawCenter); 
       group.add(root);
       group.scale.setScalar(scale);
-      group.position.y = 0.4;
+      group.position.y = 0.0;
 
       root.traverse((child) => {
         if (child.isMesh) {
@@ -437,10 +468,10 @@
     if (modelReady) {
       if (currentStatus === 0) {
         // 【开场状态】只要点击发生在 3D 画布区域内，就允许拉远镜头进入完整模式
-        handleInteractionClick();
-      } else if ((currentStatus === 1 || currentStatus === 2) && intersects.length > 0) {
-        // 【完整模式/炸开状态】必须点击命中模型本体，才允许触发状态切换
-        handleInteractionClick();
+        handleInteractionClick(intersects);
+      } else if ((currentStatus === 1 || currentStatus === 2 || currentStatus === 3) && intersects.length > 0) {
+        // 【完整模式/炸开状态/聚焦状态】必须点击命中模型本体，才允许触发状态切换
+        handleInteractionClick(intersects);
       }
     }
     
@@ -451,23 +482,51 @@
     if (!dragging) return;
     const dx = e.clientX - lastX, dy = e.clientY - lastY;
     if (Math.abs(dx) + Math.abs(dy) > 3) didDrag = true;
-    rotY += dx * 0.006;
-    rotX = Math.max(-0.6, Math.min(0.6, rotX + dy * 0.004));
+    rotY += dx * 0.0015;
+    rotX = Math.max(-0.6, Math.min(0.6, rotX + dy * 0.001));
     lastX = e.clientX; lastY = e.clientY;
   });
 
+  wrap.addEventListener('wheel', (e) => {
+    if (currentStatus !== 3 || !selectedPart) return;
+    e.preventDefault();
+    focusDistance = Math.max(1.0, Math.min(3.5, focusDistance + e.deltaY * 0.003));
+  }, { passive: false });
+
+  const resetButton = document.getElementById('reset-view');
+  if (resetButton) {
+    resetButton.addEventListener('click', () => {
+      selectedPart = null;
+      currentStatus = 1;
+      stageTitle.textContent = "浮空装配 · 完整全景模式";
+      hintText.textContent = "点击模型触发子弹时间炸开";
+      cameraTarget.copy(sceneTarget);
+      rotY = 0;
+      rotX = 0.12;
+      toggleExplode(false);
+      gsap.to(camera.position, {
+        x: 0,
+        y: 0.45,
+        z: DISTANCE_NORMAL,
+        duration: 0.7,
+        ease: "power2.inOut"
+      });
+    });
+  }
+
   // 【全新子弹时间状态机逻辑】
-  function handleInteractionClick() {
+  function handleInteractionClick(intersects) {
     if (currentStatus === 0) {
-      // 特写 -> 正常视角（看得清细节的距离）
+      // 特写 -> 正常视角（看得清细节的全局）
       currentStatus = 1;
       stageTitle.textContent = "浮空装配 · 完整全景模式";
       hintText.textContent = "点击模型触发子弹时间炸开";
       
+      cameraTarget.copy(sceneTarget);
       gsap.to(camera.position, {
         x: 0,
-        y: 0.42,
-        z: DISTANCE_NORMAL, // 平滑过渡到能看清细节的全局
+        y: 0.45,
+        z: DISTANCE_NORMAL,
         duration: 1.5,
         ease: "power2.inOut"
       });
@@ -476,33 +535,74 @@
       // 正常视角 -> 子弹时间炸开
       currentStatus = 2;
       stageTitle.textContent = "浮空装配 · 子弹时间解耦";
-      hintText.textContent = "再次点击模型可复原";
+      hintText.textContent = "点击部件进入专属聚焦视角";
       
       // 1. 部件向外炸开
       toggleExplode(true);
 
-      // 2. 镜头同步向后微退并略微抬高视角
+      // 2. 镜头同步向后微退并位置下移
+      cameraTarget.copy(sceneTarget);
       gsap.to(camera.position, {
         x: 0,
-        y: 0.46,
-        z: DISTANCE_NORMAL + 0.6,
+        y: 0.26,
+        z: DISTANCE_NORMAL + 0.38,
         duration: 0.45,
         ease: "power3.out"
       });
     } else if (currentStatus === 2) {
-      // 炸开状态 -> 复原
-      currentStatus = 1;
-      stageTitle.textContent = "浮空装配 · 完整全景模式";
-      hintText.textContent = "点击模型触发子弹时间炸开";
-      toggleExplode(false);
-      gsap.to(camera.position, {
-        x: 0,
-        y: 0.42,
-        z: DISTANCE_NORMAL,
-        duration: 0.5,
-        ease: "back.out(1.2)"
-      });
+      const part = findPartFromIntersect(intersects[0]);
+      if (!part) return;
+      focusOnPart(part);
+    } else if (currentStatus === 3) {
+      const part = findPartFromIntersect(intersects[0]);
+      if (!part) return;
+      if (part === selectedPart) {
+        restoreExplodedView();
+      } else {
+        focusOnPart(part);
+      }
     }
+  }
+
+  function findPartFromIntersect(intersect) {
+    return parts.find((p) => p.mesh === intersect.object);
+  }
+
+  function focusOnPart(part) {
+    selectedPart = part;
+    currentStatus = 3;
+    stageTitle.textContent = "浮空装配 · 部件聚焦视角";
+    hintText.textContent = "拖拽旋转，滚轮缩放；再次点击部件返回炸开";
+
+    const partCenter = new THREE.Vector3();
+    new THREE.Box3().setFromObject(part.mesh).getCenter(partCenter);
+    cameraTarget.copy(partCenter);
+    focusDistance = 1.8;
+    rotY = 0;
+    rotX = 0.2;
+
+    gsap.to(camera.position, {
+      x: partCenter.x,
+      y: partCenter.y + 0.45,
+      z: partCenter.z + focusDistance,
+      duration: 0.7,
+      ease: "power2.out"
+    });
+  }
+
+  function restoreExplodedView() {
+    selectedPart = null;
+    currentStatus = 2;
+    stageTitle.textContent = "浮空装配 · 子弹时间解耦";
+    hintText.textContent = "点击部件进入专属聚焦视角";
+    cameraTarget.copy(sceneTarget);
+    gsap.to(camera.position, {
+      x: 0,
+      y: 0.26,
+      z: DISTANCE_NORMAL + 0.38,
+      duration: 0.5,
+      ease: "back.out(1.2)"
+    });
   }
 
   function toggleExplode(isExplode) {
@@ -543,12 +643,23 @@
   function loop() {
     requestAnimationFrame(loop);
     
-    // 【全新自转规则】删除了漂浮上下动，任何时候只要没有手动拖拽，都执行水平自转
-    if (!dragging) {
-      rotY += 0.003; // 略微增加了纯水平自转速度
+    if (currentStatus === 3 && selectedPart) {
+      if (!dragging) {
+        rotY += 0.00075;
+      }
+      const offset = new THREE.Vector3();
+      offset.x = focusDistance * Math.cos(rotX) * Math.sin(rotY);
+      offset.y = focusDistance * Math.sin(rotX) + 0.1;
+      offset.z = focusDistance * Math.cos(rotX) * Math.cos(rotY);
+      camera.position.copy(cameraTarget).add(offset);
+      camera.lookAt(cameraTarget);
+    } else {
+      if (!dragging) {
+        rotY += currentStatus === 2 ? 0.0004 : 0.00025; // 子弹时间更慢，全景更慢
+      }
+      setRotation();
+      camera.lookAt(sceneTarget);
     }
-    
-    setRotation();
     renderer.render(scene, camera);
   }
 
