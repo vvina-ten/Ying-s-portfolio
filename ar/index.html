@@ -44,16 +44,35 @@
     font-weight: 600;
     text-shadow: 0 0 20px rgba(139,107,255,0.5);
   }
-  model-viewer {
+  .viewer-wrap {
+    position: relative;
     width: 100%;
     max-width: 920px;
     height: 62vh;
+  }
+  model-viewer {
+    width: 100%;
+    height: 100%;
     border-radius: 18px;
     overflow: hidden;
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.15);
     --poster-color: transparent;
   }
+  #load-status {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--text-lo);
+    letter-spacing: 0.05em;
+    pointer-events: none;
+    background: rgba(10,10,26,0.35);
+    border-radius: 18px;
+  }
+  #load-status.hidden { display: none; }
   #btn {
     padding: 14px 30px;
     font-size: 15px;
@@ -97,18 +116,21 @@
     <h1>AR 实景查看</h1>
   </div>
 
-  <model-viewer id="viewer"
-    src="../web/model.glb"
-    ios-src="./kn0_w3r.usdz"
-    alt="Suspended Assembly"
-    ar
-    ar-modes="quick-look scene-viewer webxr"
-    camera-controls
-    auto-rotate
-    shadow-intensity="1"
-    environment-image="neutral"
-    exposure="1">
-  </model-viewer>
+  <div class="viewer-wrap">
+    <model-viewer id="viewer"
+      src="../web/model.glb"
+      ios-src="./kn0_w3r.usdz"
+      alt="Suspended Assembly"
+      ar
+      ar-modes="quick-look scene-viewer webxr"
+      camera-controls
+      auto-rotate
+      shadow-intensity="1"
+      environment-image="neutral"
+      exposure="1">
+    </model-viewer>
+    <div id="load-status">加载模型中… 0%</div>
+  </div>
 
   <button id="btn">进入 AR</button>
   <div id="note">在手机浏览器中打开本页：iPhone 用 Safari 会通过「快速查看」进入 AR，Android 用 Chrome 会自动调用 Scene Viewer 或 WebXR。电脑访问只能查看 3D 模型，无法进入 AR。</div>
@@ -118,6 +140,26 @@
   const btn = document.getElementById('btn');
   const viewer = document.getElementById('viewer');
   const note = document.getElementById('note');
+  const loadStatus = document.getElementById('load-status');
+
+  viewer.addEventListener('progress', (e) => {
+    const pct = Math.round(e.detail.totalProgress * 100);
+    loadStatus.textContent = `加载模型中… ${pct}%`;
+    if (viewer.loaded) loadStatus.classList.add('hidden');
+  });
+  viewer.addEventListener('load', () => {
+    loadStatus.classList.add('hidden');
+  });
+  viewer.addEventListener('error', (e) => {
+    loadStatus.textContent = '模型加载失败，请检查网络后刷新重试';
+    console.error('model-viewer load error', e.detail);
+  });
+  const loadedCheck = setInterval(() => {
+    if (viewer.loaded) {
+      loadStatus.classList.add('hidden');
+      clearInterval(loadedCheck);
+    }
+  }, 300);
 
   const isMobile = /Mobi|Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
   if (!isMobile) {
