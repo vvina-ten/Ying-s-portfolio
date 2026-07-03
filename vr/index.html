@@ -102,13 +102,90 @@
     flex-direction: column;
   }
 
-  .clip video {
+  .clip-media {
+    position: relative;
     width: 100%;
-    display: block;
-    aspect-ratio: 9 / 16;
-    object-fit: cover;
+    cursor: pointer;
     background: #000;
   }
+
+  .clip-media video {
+    width: 100%;
+    display: block;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  .clip-media .play-hint {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0);
+    transition: background 0.2s ease;
+  }
+
+  .clip-media:hover .play-hint { background: rgba(0,0,0,0.25); }
+
+  .clip-media .play-hint svg {
+    width: 46px;
+    height: 46px;
+    opacity: 0;
+    transform: scale(0.85);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    filter: drop-shadow(0 4px 14px rgba(0,0,0,0.5));
+  }
+
+  .clip-media:hover .play-hint svg { opacity: 0.95; transform: scale(1); }
+
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(4,2,10,0.9);
+    padding: 24px;
+  }
+
+  .lightbox.open { display: flex; }
+
+  .lightbox-inner {
+    position: relative;
+    max-width: 92vw;
+    max-height: 86vh;
+  }
+
+  .lightbox video {
+    display: block;
+    max-width: 92vw;
+    max-height: 86vh;
+    width: auto;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: -18px;
+    right: -18px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    color: var(--text-hi);
+    font-size: 18px;
+    line-height: 36px;
+    text-align: center;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+  }
+
+  .lightbox-close:hover { background: rgba(255,255,255,0.22); }
 
   .clip .clip-body {
     padding: 22px 22px 26px;
@@ -199,7 +276,12 @@
 
   <div class="grid">
     <div class="clip">
-      <video src="./video1.mp4" controls playsinline></video>
+      <div class="clip-media" data-src="./video1.mp4" data-ratio="1380 / 768">
+        <video src="./video1.mp4" muted loop autoplay playsinline preload="metadata"></video>
+        <div class="play-hint">
+          <svg viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,0.4)"/><path d="M9.5 7.5v9l8-4.5-8-4.5z"/></svg>
+        </div>
+      </div>
       <div class="clip-body">
         <div class="tag">Clip 1</div>
         <h2>Live Hand-Tracked Interaction</h2>
@@ -208,7 +290,12 @@
     </div>
 
     <div class="clip">
-      <video src="./video2.mp4" controls playsinline></video>
+      <div class="clip-media" data-src="./video2.mp4" data-ratio="1670 / 648">
+        <video src="./video2.mp4" muted loop autoplay playsinline preload="metadata"></video>
+        <div class="play-hint">
+          <svg viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,0.4)"/><path d="M9.5 7.5v9l8-4.5-8-4.5z"/></svg>
+        </div>
+      </div>
       <div class="clip-body">
         <div class="tag">Clip 2</div>
         <h2>Scripted Animation, Real-Time Audio</h2>
@@ -221,6 +308,47 @@
     <p><strong>Source code:</strong> the Unity project itself is too large to host here, but the interaction scripts used in these builds are available in the repo — <a href="https://github.com/vvina-ten/Ying-s-portfolio/tree/main/vr/script" target="_blank" rel="noopener">browse vr/script on GitHub →</a></p>
   </div>
 </div>
+
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-inner">
+    <button class="lightbox-close" id="lightbox-close" aria-label="Close">×</button>
+    <video id="lightbox-video" controls playsinline></video>
+  </div>
+</div>
+
+<script>
+  const lightbox = document.getElementById('lightbox');
+  const lightboxVideo = document.getElementById('lightbox-video');
+  const lightboxClose = document.getElementById('lightbox-close');
+
+  function openLightbox(src, ratio) {
+    lightboxVideo.style.aspectRatio = ratio;
+    lightboxVideo.src = src;
+    lightbox.classList.add('open');
+    lightboxVideo.play();
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    lightboxVideo.pause();
+    lightboxVideo.removeAttribute('src');
+    lightboxVideo.load();
+  }
+
+  document.querySelectorAll('.clip-media').forEach((el) => {
+    el.addEventListener('click', () => {
+      openLightbox(el.dataset.src, el.dataset.ratio);
+    });
+  });
+
+  lightboxClose.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
+  });
+</script>
 
 </body>
 </html>
