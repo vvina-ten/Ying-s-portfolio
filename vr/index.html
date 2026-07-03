@@ -158,6 +158,15 @@
 
   .note-card strong { color: var(--text-hi); font-weight: 500; }
 
+  .note-card a {
+    color: var(--accent-2);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255,143,214,0.4);
+    transition: border-color 0.2s ease;
+  }
+
+  .note-card a:hover { border-color: var(--accent-2); }
+
   #back {
     position: fixed;
     top: 24px;
@@ -209,7 +218,7 @@
   </div>
 
   <div class="note-card">
-    <p><strong>Note:</strong> this page currently shows the two demo clips only. If you'd like the underlying interaction-logic code shown alongside them, send over the script(s) or a link to the repo and it can be added here.</p>
+    <p><strong>Source code:</strong> the Unity project itself is too large to host here, but the interaction scripts used in these builds are available in the repo — <a href="https://github.com/vvina-ten/Ying-s-portfolio/tree/main/vr/script" target="_blank" rel="noopener">browse vr/script on GitHub →</a></p>
   </div>
 </div>
 
