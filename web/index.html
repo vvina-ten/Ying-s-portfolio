@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -302,58 +302,57 @@
 
 <div id="bg"></div>
 <div id="grain"></div>
-<a id="back" href="../">← 返回入口页</a>
+<a id=”back” href=”../”>← Back to Home</a>
 
-<div class="stage">
-  <div class="glass-layout">
-    
-    <!-- 左：互动舞台 -->
-    <div class="interactive-stage">
-      <div class="eyebrow">Suspended Assembly</div>
-      <h1 id="stage-title">浮空装配 · 特写模式</h1>
-      
-      <div id="canvas-wrap">
-        <button id="reset-view">还原视角</button>
+<div class=”stage”>
+  <div class=”glass-layout”>
+
+    <!-- Left: interactive stage -->
+    <div class=”interactive-stage”>
+      <div class=”eyebrow”>Suspended Assembly</div>
+      <h1 id=”stage-title”>Scene · Close-up</h1>
+
+      <div id=”canvas-wrap”>
+        <button id=”reset-view”>Reset View</button>
       </div>
-      
-      <div class="hint">
-        <span class="dot"></span>
-        <span id="hint-text">点击模型解锁完整视角</span>
+
+      <div class=”hint”>
+        <span class=”dot”></span>
+        <span id=”hint-text”>Click the model to unlock the full view</span>
       </div>
     </div>
 
-    <!-- 右：固定介绍与AR二维码 -->
-    <div class="info-panel">
+    <!-- Right: fixed intro and AR QR code -->
+    <div class=”info-panel”>
       <div>
-        <div class="eyebrow" style="color:var(--accent-2);">Project Details</div>
-        <h2 style="font-family:'Space Grotesk'; color:var(--text-hi); margin-top:10px;">设计说明</h2>
-        <div class="sub">
-          这是一个基于 Web 端的高级三维动态交互系统。模型通过精确的法线解耦算法实现了“部件炸开”视觉，支持在极近环境下的高保真特写以及全局自动旋转巡航。
+        <div class=”eyebrow” style=”color:var(--accent-2);”>Project Details</div>
+        <h2 style=”font-family:'Space Grotesk'; color:var(--text-hi); margin-top:10px;”>Design Notes</h2>
+        <div class=”sub”>
+          This is an advanced web-based 3D interactive system. A precise normal-decoupling algorithm drives the “exploded parts” effect, with high-fidelity close-ups and automatic full-scene rotation. Every part supports its own close-up view — click it to zoom in and inspect it closely.
         </div>
-        <div class="sub" style="margin-top:20px; color:var(--text-hi);">
-          <strong>交互指南：</strong><br/>
-          • 首次点击：镜头从特写平滑拉远至中心，并开启鼠标拖拽旋转。<br/>
-          • 再次点击：模型部件瞬间炸开，1-2秒后自动恢复完整状态。
-        </div>
-      </div>
-
-      <!-- 下部分：跨平台免安装 WebAR 二维码 -->
-      <div class="qr-section">
-        <div class="qr-code">
-          <img id="qr-image" src="../ar/qr-code.png" alt="AR QR">
-        </div>
-        <div class="qr-text">
-          <h4>移动端 AR 实景</h4>
-          <p>仅限手机访问。点击二维码放大，扫码或点击进入 AR 页面，在手机上直接查看模型。</p>
-          <p style="margin-top:8px; color:var(--accent);">请在手机上打开此链接，电脑端不支持 AR 体验。</p>
+        <div class=”sub” style=”margin-top:20px; color:var(--text-hi);”>
+          <strong>Interaction Guide:</strong><br/>
+          • First click: the camera zooms out smoothly from close-up to center view and enables drag-to-rotate.
         </div>
       </div>
 
-      <div class="qr-popup-overlay" id="qr-popup-overlay" style="display:none;">
-        <div class="qr-popup">
-          <button class="close-qr" id="close-qr">×</button>
-          <img id="qr-popup-img" src="../ar/qr-code.png" alt="放大二维码">
-          <p>扫描此二维码可直接在手机上打开 AR 体验页面。</p>
+      <!-- Bottom section: cross-platform install-free WebAR QR code -->
+      <div class=”qr-section”>
+        <div class=”qr-code”>
+          <img id=”qr-image” src=”../ar/qr-code.png” alt=”AR QR”>
+        </div>
+        <div class=”qr-text”>
+          <h4>Mobile AR View</h4>
+          <p>Mobile only. Tap the QR code to enlarge it, then scan or tap to open the AR page and view the model on your phone — works on both iOS and Android.</p>
+          <p style=”margin-top:8px; color:var(--accent);”>Please open this link on your phone — AR isn't supported on desktop.</p>
+        </div>
+      </div>
+
+      <div class=”qr-popup-overlay” id=”qr-popup-overlay” style=”display:none;”>
+        <div class=”qr-popup”>
+          <button class=”close-qr” id=”close-qr”>×</button>
+          <img id=”qr-popup-img” src=”../ar/qr-code.png” alt=”Enlarged QR code”>
+          <p>Scan this QR code to open the AR experience directly on your phone.</p>
         </div>
       </div>
     </div>
@@ -388,7 +387,7 @@
   });
 
   const loadingEl = document.createElement('div');
-  loadingEl.textContent = '加载模型中…';
+  loadingEl.textContent = 'Loading model…';
   loadingEl.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(244,241,255,0.55);font-size:12px;letter-spacing:0.08em;';
   wrap.style.position = 'relative';
   wrap.appendChild(loadingEl);
@@ -508,7 +507,7 @@
     },
     undefined,
     (err) => {
-      loadingEl.textContent = '模型加载失败';
+      loadingEl.textContent = 'Failed to load model';
       console.error('GLB load error:', err);
     }
   );
@@ -582,8 +581,8 @@
     resetButton.addEventListener('click', () => {
       selectedPart = null;
       currentStatus = 1;
-      stageTitle.textContent = "浮空装配 · 完整全景模式";
-      hintText.textContent = "点击模型触发子弹时间炸开";
+      stageTitle.textContent = "Scene · Full View";
+      hintText.textContent = "Click the model to trigger the exploded view";
       cameraTarget.copy(sceneTarget);
       rotY = 0;
       rotX = 0.12;
@@ -603,9 +602,9 @@
     if (currentStatus === 0) {
       // 特写 -> 正常视角（看得清细节的全局）
       currentStatus = 1;
-      stageTitle.textContent = "浮空装配 · 完整全景模式";
-      hintText.textContent = "点击模型触发子弹时间炸开";
-      
+      stageTitle.textContent = "Scene · Full View";
+      hintText.textContent = "Click the model to trigger the exploded view";
+
       cameraTarget.copy(sceneTarget);
       gsap.to(camera.position, {
         x: 0,
@@ -614,12 +613,12 @@
         duration: 1.5,
         ease: "power2.inOut"
       });
-      
+
     } else if (currentStatus === 1) {
       // 正常视角 -> 子弹时间炸开
       currentStatus = 2;
-      stageTitle.textContent = "浮空装配 · 子弹时间解耦";
-      hintText.textContent = "点击部件进入专属聚焦视角";
+      stageTitle.textContent = "Scene · Exploded View";
+      hintText.textContent = "Click a part to enter its focused view";
       
       // 1. 部件向外炸开
       toggleExplode(true);
@@ -655,8 +654,8 @@
   function focusOnPart(part) {
     selectedPart = part;
     currentStatus = 3;
-    stageTitle.textContent = "浮空装配 · 部件聚焦视角";
-    hintText.textContent = "拖拽旋转，滚轮缩放；再次点击部件返回炸开";
+    stageTitle.textContent = "Scene · Part Focus";
+    hintText.textContent = "Drag to rotate, scroll to zoom; click the part again to return to the exploded view";
 
     const partCenter = new THREE.Vector3();
     new THREE.Box3().setFromObject(part.mesh).getCenter(partCenter);
@@ -677,8 +676,8 @@
   function restoreExplodedView() {
     selectedPart = null;
     currentStatus = 2;
-    stageTitle.textContent = "浮空装配 · 子弹时间解耦";
-    hintText.textContent = "点击部件进入专属聚焦视角";
+    stageTitle.textContent = "Scene · Exploded View";
+    hintText.textContent = "Click a part to enter its focused view";
     cameraTarget.copy(sceneTarget);
     gsap.to(camera.position, {
       x: 0,

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>AR 体验 — Suspended Assembly</title>
+<title>AR Experience — Suspended Assembly</title>
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 <style>
   :root {
@@ -108,12 +108,12 @@
 </head>
 <body>
 
-<a id="back" href="../">← 返回入口页</a>
+<a id="back" href="../">← Back to Home</a>
 
 <div class="wrap">
   <div style="text-align:center;">
     <div class="eyebrow">Suspended Assembly</div>
-    <h1>AR 实景查看</h1>
+    <h1>AR View</h1>
   </div>
 
   <div class="viewer-wrap">
@@ -129,11 +129,11 @@
       environment-image="neutral"
       exposure="1">
     </model-viewer>
-    <div id="load-status">加载模型中… 0%</div>
+    <div id="load-status">Loading model… 0%</div>
   </div>
 
-  <button id="btn">进入 AR</button>
-  <div id="note">在手机浏览器中打开本页：iPhone 用 Safari 会通过「快速查看」进入 AR，Android 用 Chrome 会自动调用 Scene Viewer 或 WebXR。电脑访问只能查看 3D 模型，无法进入 AR。</div>
+  <button id="btn">Enter AR</button>
+  <div id="note">Open this page in a mobile browser: on iPhone, Safari launches AR via Quick Look; on Android, Chrome uses Scene Viewer or WebXR. On desktop you can only view the 3D model — AR isn't available.</div>
 </div>
 
 <script>
@@ -144,14 +144,14 @@
 
   viewer.addEventListener('progress', (e) => {
     const pct = Math.round(e.detail.totalProgress * 100);
-    loadStatus.textContent = `加载模型中… ${pct}%`;
+    loadStatus.textContent = `Loading model… ${pct}%`;
     if (viewer.loaded) loadStatus.classList.add('hidden');
   });
   viewer.addEventListener('load', () => {
     loadStatus.classList.add('hidden');
   });
   viewer.addEventListener('error', (e) => {
-    loadStatus.textContent = '模型加载失败，请检查网络后刷新重试';
+    loadStatus.textContent = 'Failed to load model — check your connection and refresh';
     console.error('model-viewer load error', e.detail);
   });
   const loadedCheck = setInterval(() => {
@@ -163,7 +163,7 @@
 
   const isMobile = /Mobi|Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
   if (!isMobile) {
-    btn.textContent = '请使用手机打开本页以体验 AR';
+    btn.textContent = 'Please open this page on your phone to experience AR';
     btn.disabled = true;
   }
 
@@ -171,7 +171,7 @@
     if (!isMobile) return;
     viewer.activateAR().catch((err) => {
       console.warn('AR entry failed', err);
-      note.textContent = '当前浏览器无法直接进入 AR，请确认已用 Safari（iOS）或 Chrome（Android）打开本页后重试。';
+      note.textContent = "This browser can't launch AR directly. Make sure you're using Safari (iOS) or Chrome (Android), then try again.";
     });
   });
 </script>
