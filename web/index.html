@@ -340,7 +340,7 @@
       <!-- 下部分：跨平台免安装 WebAR 二维码 -->
       <div class="qr-section">
         <div class="qr-code">
-          <img id="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=/ar/index.html" alt="AR QR">
+          <img id="qr-image" src="../ar/qr-code.png" alt="AR QR">
         </div>
         <div class="qr-text">
           <h4>移动端 AR 实景</h4>
@@ -352,7 +352,7 @@
       <div class="qr-popup-overlay" id="qr-popup-overlay" style="display:none;">
         <div class="qr-popup">
           <button class="close-qr" id="close-qr">×</button>
-          <img id="qr-popup-img" src="" alt="放大二维码">
+          <img id="qr-popup-img" src="../ar/qr-code.png" alt="放大二维码">
           <p>扫描此二维码可直接在手机上打开 AR 体验页面。</p>
         </div>
       </div>
@@ -370,19 +370,6 @@
   const stageTitle = document.getElementById('stage-title');
   const qrSection = document.querySelector('.qr-section');
   const qrPopup = document.getElementById('qr-popup-overlay');
-  const qrPopupImg = document.getElementById('qr-popup-img');
-  const qrImage = document.getElementById('qr-image');
-
-  const arPageUrl = (function () {
-    const href = window.location.href;
-    if (href.endsWith('/web/index.html')) return href.replace(/\/web\/index\.html$/, '/ar/index.html');
-    if (href.endsWith('/web/')) return href.replace(/\/web\/$/, '/ar/index.html');
-    if (window.location.origin) return `${window.location.origin}/ar/index.html`;
-    return 'ar/index.html';
-  })();
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(arPageUrl)}`;
-  qrImage.src = qrCodeUrl;
-  qrPopupImg.src = qrCodeUrl;
 
   function toggleQrPopup(show) {
     qrPopup.style.display = show ? 'flex' : 'none';
