@@ -302,56 +302,56 @@
 
 <div id="bg"></div>
 <div id="grain"></div>
-<a id=”back” href=”../”>← Back to Home</a>
+<a id="back" href="../">← Back to Home</a>
 
-<div class=”stage”>
-  <div class=”glass-layout”>
+<div class="stage">
+  <div class="glass-layout">
 
     <!-- Left: interactive stage -->
-    <div class=”interactive-stage”>
-      <div class=”eyebrow”>Suspended Assembly</div>
-      <h1 id=”stage-title”>Scene · Close-up</h1>
+    <div class="interactive-stage">
+      <div class="eyebrow">Suspended Assembly</div>
+      <h1 id="stage-title">Scene · Close-up</h1>
 
-      <div id=”canvas-wrap”>
-        <button id=”reset-view”>Reset View</button>
+      <div id="canvas-wrap">
+        <button id="reset-view">Reset View</button>
       </div>
 
-      <div class=”hint”>
-        <span class=”dot”></span>
-        <span id=”hint-text”>Click the model to unlock the full view</span>
+      <div class="hint">
+        <span class="dot"></span>
+        <span id="hint-text">Click the model to unlock the full view</span>
       </div>
     </div>
 
     <!-- Right: fixed intro and AR QR code -->
-    <div class=”info-panel”>
+    <div class="info-panel">
       <div>
-        <div class=”eyebrow” style=”color:var(--accent-2);”>Project Details</div>
-        <h2 style=”font-family:'Space Grotesk'; color:var(--text-hi); margin-top:10px;”>Design Notes</h2>
-        <div class=”sub”>
+        <div class="eyebrow" style="color:var(--accent-2);">Project Details</div>
+        <h2 style="font-family:'Space Grotesk'; color:var(--text-hi); margin-top:10px;">Design Notes</h2>
+        <div class="sub">
           This is an advanced web-based 3D interactive system. A precise normal-decoupling algorithm drives the “exploded parts” effect, with high-fidelity close-ups and automatic full-scene rotation. Every part supports its own close-up view — click it to zoom in and inspect it closely.
         </div>
-        <div class=”sub” style=”margin-top:20px; color:var(--text-hi);”>
+        <div class="sub" style="margin-top:20px; color:var(--text-hi);">
           <strong>Interaction Guide:</strong><br/>
           • First click: the camera zooms out smoothly from close-up to center view and enables drag-to-rotate.
         </div>
       </div>
 
       <!-- Bottom section: cross-platform install-free WebAR QR code -->
-      <div class=”qr-section”>
-        <div class=”qr-code”>
-          <img id=”qr-image” src=”../ar/qr-code.png” alt=”AR QR”>
+      <div class="qr-section">
+        <div class="qr-code">
+          <img id="qr-image" src="../ar/qr-code.png" alt="AR QR">
         </div>
-        <div class=”qr-text”>
+        <div class="qr-text">
           <h4>Mobile AR View</h4>
           <p>Mobile only. Tap the QR code to enlarge it, then scan or tap to open the AR page and view the model on your phone — works on both iOS and Android.</p>
-          <p style=”margin-top:8px; color:var(--accent);”>Please open this link on your phone — AR isn't supported on desktop.</p>
+          <p style="margin-top:8px; color:var(--accent);">Please open this link on your phone — AR isn't supported on desktop.</p>
         </div>
       </div>
 
-      <div class=”qr-popup-overlay” id=”qr-popup-overlay” style=”display:none;”>
-        <div class=”qr-popup”>
-          <button class=”close-qr” id=”close-qr”>×</button>
-          <img id=”qr-popup-img” src=”../ar/qr-code.png” alt=”Enlarged QR code”>
+      <div class="qr-popup-overlay" id="qr-popup-overlay" style="display:none;">
+        <div class="qr-popup">
+          <button class="close-qr" id="close-qr">×</button>
+          <img id="qr-popup-img" src="../ar/qr-code.png" alt="Enlarged QR code">
           <p>Scan this QR code to open the AR experience directly on your phone.</p>
         </div>
       </div>
