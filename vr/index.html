@@ -4,38 +4,166 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>VR Project — Suspended Assembly</title>
-<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  html, body { margin: 0; height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; }
+  :root {
+    --bg-1: #0a0a1a;
+    --bg-2: #2a1a4a;
+    --bg-3: #4a2f7a;
+    --accent: #8b6bff;
+    --accent-2: #ff8fd6;
+    --glass-fill: rgba(255,255,255,0.06);
+    --glass-edge: rgba(255,255,255,0.22);
+    --text-hi: #f4f1ff;
+    --text-lo: rgba(244,241,255,0.6);
+  }
 
-  #overlay {
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    min-height: 100%;
+    background: var(--bg-1);
+    font-family: 'Inter', sans-serif;
+  }
+
+  #bg {
     position: fixed;
-    top: 24px;
-    left: 24px;
-    z-index: 10;
-    color: #f4f1ff;
-    pointer-events: none;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(139,107,255,0.35), transparent 60%),
+      radial-gradient(ellipse 70% 50% at 85% 85%, rgba(255,143,214,0.22), transparent 60%),
+      linear-gradient(160deg, var(--bg-1) 0%, var(--bg-2) 55%, var(--bg-3) 100%);
+    z-index: 0;
   }
-  #overlay .eyebrow {
-    font-size: 11px;
-    letter-spacing: 0.28em;
+
+  .stage {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 88px 24px 64px;
+    gap: 40px;
+  }
+
+  .heading { text-align: center; max-width: 640px; }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.32em;
     text-transform: uppercase;
-    opacity: 0.6;
+    color: var(--text-lo);
+    font-weight: 500;
   }
-  #overlay h1 {
+
+  h1 {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 20px;
-    margin: 4px 0 0;
     font-weight: 600;
-    text-shadow: 0 0 20px rgba(139,107,255,0.6);
+    font-size: clamp(26px, 4.5vw, 40px);
+    letter-spacing: -0.01em;
+    color: var(--text-hi);
+    margin-top: 10px;
+    text-shadow: 0 0 40px rgba(139,107,255,0.35);
   }
+
+  .sub {
+    font-size: 14px;
+    color: var(--text-lo);
+    margin-top: 12px;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(320px, 480px));
+    gap: 28px;
+    width: 100%;
+    max-width: 1020px;
+  }
+
+  @media (max-width: 760px) {
+    .grid { grid-template-columns: 1fr; max-width: 480px; }
+  }
+
+  .clip {
+    border-radius: 22px;
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-edge);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow:
+      0 8px 32px rgba(0,0,0,0.4),
+      inset 0 1px 0 rgba(255,255,255,0.22);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .clip video {
+    width: 100%;
+    display: block;
+    aspect-ratio: 9 / 16;
+    object-fit: cover;
+    background: #000;
+  }
+
+  .clip .clip-body {
+    padding: 22px 22px 26px;
+  }
+
+  .clip .tag {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    font-weight: 500;
+  }
+
+  .clip h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    color: var(--text-hi);
+    margin-top: 8px;
+    font-weight: 600;
+  }
+
+  .clip p {
+    font-size: 13px;
+    color: var(--text-lo);
+    margin-top: 10px;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  .note-card {
+    width: 100%;
+    max-width: 1020px;
+    border-radius: 22px;
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-edge);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    padding: 22px 26px;
+  }
+
+  .note-card p {
+    font-size: 13px;
+    color: var(--text-lo);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  .note-card strong { color: var(--text-hi); font-weight: 500; }
 
   #back {
     position: fixed;
     top: 24px;
     right: 24px;
     z-index: 10;
-    color: #f4f1ff;
+    color: var(--text-hi);
     text-decoration: none;
     font-size: 13px;
     padding: 8px 16px;
@@ -48,54 +176,42 @@
 </head>
 <body>
 
-<div id="overlay">
-  <div class="eyebrow">Suspended Assembly</div>
-  <h1>VR Project · Placeholder Scene</h1>
-</div>
+<div id="bg"></div>
 <a id="back" href="../">← Back to Home</a>
 
-<!--
-  这是一个可运行的 WebXR 起始场景（A-Frame）。
-  桌面浏览器里用鼠标拖动看四周；有VR头显（比如Quest）打开这个网址，
-  点右下角的"进入VR"图标就能进沉浸模式。
+<div class="stage">
+  <div class="heading">
+    <div class="eyebrow">Suspended Assembly</div>
+    <h1>VR Project · Drum Interaction</h1>
+    <div class="sub">
+      A VR rhythm-drumming build made in Unity. The left hand grips the drum, the right hand swings a stick, and strike speed drives volume. Two clips below show two different interaction approaches; the full Unity project is too large to host here, but the core logic is summarized underneath.
+    </div>
+  </div>
 
-  把下面 <a-scene> 里的内容换成你真正的VR场景即可，
-  这个文件夹和 /web/ 完全独立，随便改不会影响另一个项目。
--->
+  <div class="grid">
+    <div class="clip">
+      <video src="./video1.mp4" controls playsinline></video>
+      <div class="clip-body">
+        <div class="tag">Clip 1</div>
+        <h2>Live Hand-Tracked Interaction</h2>
+        <p>Each hand uses a different interaction model. The left hand detects trigger and grab input. The right hand tracks strike velocity — at the moment of impact, it looks back over the previous 10 frames and takes the highest velocity value; if it exceeds a set threshold, a synthesized accent hit plays.</p>
+      </div>
+    </div>
 
-<a-scene background="color: #0a0a1a" fog="type: exponential; color: #150a2e; density: 0.08">
+    <div class="clip">
+      <video src="./video2.mp4" controls playsinline></video>
+      <div class="clip-body">
+        <div class="tag">Clip 2</div>
+        <h2>Scripted Animation, Real-Time Audio</h2>
+        <p>A button press triggers a pre-built animation, but the stick-to-drumhead contact sound is synthesized live. Striking within 0.4s of entering the "heavy zone" plays an accent hit; otherwise it plays a light hit. The left-hand trigger simulates a braking/stop sound.</p>
+      </div>
+    </div>
+  </div>
 
-  <a-assets></a-assets>
-
-  <!-- 环境光 -->
-  <a-light type="ambient" color="#8b6bff" intensity="0.5"></a-light>
-  <a-light type="directional" color="#ff8fd6" intensity="0.6" position="3 4 2"></a-light>
-
-  <!-- 地面：暗紫渐变感的网格 -->
-  <a-plane rotation="-90 0 0" width="30" height="30" color="#150a2e"
-           material="metalness: 0.2; roughness: 0.8"></a-plane>
-
-  <!-- 占位物体：呼应网页版的分段小机器人配色 -->
-  <a-entity id="assembly" position="0 1.4 -3">
-    <a-box color="#ffe08b" width="0.5" height="0.45" depth="0.45" position="0 1.1 0"></a-box>
-    <a-sphere color="#6be0ff" radius="0.4" position="0 0.5 0"></a-sphere>
-    <a-cylinder color="#7bffb0" radius="0.38" height="0.28" position="0 0.1 0"></a-cylinder>
-    <a-sphere color="#ff8fd6" radius="0.12" position="-0.45 0.65 0"></a-sphere>
-    <a-sphere color="#ff8fd6" radius="0.12" position="0.45 0.65 0"></a-sphere>
-
-    <a-animation attribute="rotation" dur="12000" easing="linear"
-                 to="0 360 0" repeat="indefinite"></a-animation>
-  </a-entity>
-
-  <!-- 提示文字，悬浮在场景里 -->
-  <a-text value="Replace with your VR content" align="center" color="#f4f1ff"
-          position="0 2.6 -3" width="4" opacity="0.7"></a-text>
-
-  <a-sky color="#0a0a1a"></a-sky>
-
-  <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
-
-</a-scene>
+  <div class="note-card">
+    <p><strong>Note:</strong> this page currently shows the two demo clips only. If you'd like the underlying interaction-logic code shown alongside them, send over the script(s) or a link to the repo and it can be added here.</p>
+  </div>
+</div>
 
 </body>
 </html>
